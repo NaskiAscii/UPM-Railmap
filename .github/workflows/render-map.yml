@@ -1,0 +1,38 @@
+name: Render Comblex Network Map
+
+on:
+  push:
+    paths:
+      - "network.csv"
+      - "render.py"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
+          pip install pandas graphviz
+
+      - name: Generate network map
+        run: python render.py
+
+      - name: Commit updated SVG
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add output/comblex_network.svg
+          git commit -m "Auto-update network map" || echo "No changes"
+          git push
